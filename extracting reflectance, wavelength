@@ -1,0 +1,40 @@
+from tkinter import Tk
+from tkinter.filedialog import askopenfilenames
+import numpy as np
+import pandas as pd
+from scipy.signal import find_peaks
+
+from sklearn.preprocessing import StandardScaler
+from sklearn.decomposition import PCA
+
+import matplotlib.pyplot as plt 
+
+root = Tk()
+root.withdraw() # hide the root window
+root.lift() # bring the root window to the front
+root.attributes("-topmost", True) # ensure the file dialog in on top
+root.update() # update the root window to apply changes
+
+
+X = []
+
+while True:
+
+ file_paths  = askopenfilenames(title = " Select Multiple Files ", parent = root )
+ 
+ if not file_paths:
+  break
+
+ for file_path in  file_paths:
+  df = pd.read_csv(file_path, skiprows = 23, sep = '\s+', header=None)
+  wavelength = df.iloc[:, 0]
+  reflectance = df.iloc[:, -1]
+  X.append(reflectance)
+
+X = np.array(X)
+print(X)
+
+labels = np.array([0, 0, 0,
+          1, 1, 1,
+          2, 2, 2,
+          3, 3, 3 ])
