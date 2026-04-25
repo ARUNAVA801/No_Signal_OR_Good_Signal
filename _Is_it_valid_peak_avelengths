@@ -1,0 +1,63 @@
+# no signal = huge variance between same class,  # good signal = low variance b/w same class, high variance b/w diff class.
+
+from scipy.signal import find_peaks
+
+within_var = {}
+bw_var = {}
+Scores = {}
+
+# values = X[:, peak_wavelength_indices]
+
+variance_across_samples = np.var(X, axis = 0)
+
+valid_wavelength_indices = np.where((wavelength > 450) & (wavelength < 2200))[0]
+
+peaks, _ = find_peaks (variance_across_samples[valid_wavelength_indices], distance = 35)
+
+peak_wavelength_indices = valid_wavelength_indices[peaks]
+
+# print(peak_wavelength_indices )
+print("\nTotal peak_wavelngths :", len(peak_wavelength_indices), "\n")
+
+for wl in peak_wavelength_indices:
+ 
+
+#  within_var = {}
+#  bw_var = {}
+
+ peak_wavelength = wavelength[wl]
+
+ values = X[:, wl]
+
+ overall_mean = np.mean(values)
+
+ w_var = 0
+ b_var = 0
+ 
+ for cls in np.unique(labels):
+      
+      class_values = values[labels==cls]
+
+      class_mean = np.mean(class_values)
+ 
+      w_var += np.sum((class_values - class_mean)**2)  # w_var
+ 
+      b_var += len(class_values)*((class_mean - overall_mean)**2)
+
+      
+ print("\npeak wavelength \n", peak_wavelength)
+ within_var[peak_wavelength] = w_var  # as key is immutable so it is not changed
+ bw_var[peak_wavelength] = b_var 
+ 
+ score = b_var / ( w_var + 1e-8 )
+
+ Scores[peak_wavelength] = score
+
+ print("\nDiscriminative Score per Wavelength", Scores, "\n")
+ print("Variances in Same Class \n", within_var.items(), "\n")
+ print("Variances in different Classes\n",bw_var.items(), "\n")
+
+ranking = sorted(Scores.items(), key=lambda X: X[1], reverse= True)
+
+for wv, score in ranking:
+   print(f"wavelength {wv:.2f} nm,  Score{score:.4f}")
