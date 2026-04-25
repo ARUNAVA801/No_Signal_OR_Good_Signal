@@ -1,0 +1,53 @@
+variance_across_samples = np.var(X, axis = 0) # this calculates the variance of reflectance across days at the same wavelength. axis 0 so columnwise
+
+print(variance_across_samples)
+
+valid_wavelength_indices = np.where((wavelength > 450) & (wavelength < 2200)) [0]
+
+peaks, _ = find_peaks(variance_across_samples[valid_wavelength_indices], distance = 35)
+
+peak_wavelength_indices = valid_wavelength_indices[peaks] # transform back to the indices of wavelengths.
+
+peak_wavelengths = wavelength[peak_wavelength_indices]
+
+peak_variances = variance_across_samples[peak_wavelength_indices]
+
+X = X[:, peak_wavelength_indices]
+
+# labels = np.array([0, 0, 0,
+#           1, 1, 1,
+#           2, 2, 2,
+#           3, 3, 3 ])
+
+plt.figure(figsize=(10,6))
+plt.plot(wavelength[valid_wavelength_indices], variance_across_samples[valid_wavelength_indices], color='blue')
+plt.scatter(peak_wavelengths, peak_variances, color='red')
+plt.xlabel('wavelength')
+plt.ylabel('Variance Across Samples')
+plt.title("peaks")
+plt.grid(True)
+plt.show()
+
+# pca
+
+scaler = StandardScaler()
+X_scaled = scaler.fit_transform(X)
+
+print(X_scaled)
+
+pca = PCA(n_components=2)
+X_pca = pca.fit_transform(X_scaled)
+print(X_pca)
+
+for cls in np.unique(labels):
+ print(f"Class {cls}")
+ print(X_pca[labels==cls])
+
+plt.scatter(X_pca[:, 0], X_pca[:, 1], c=labels, cmap = 'viridis')
+plt.xlabel('pca 1')
+plt.ylabel('pca 2')
+plt.colorbar(label='class')
+plt.title('principal component analysis')
+plt.grid(True)
+plt.show()
+
